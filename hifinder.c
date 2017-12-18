@@ -12,17 +12,26 @@ int main(int argc, char **argv) {
     char text[100];
     int i =0;
     char buf[200];
-    char dest[] = "/sys/class/hidraw/hidraw1/device/modalias";
+    char dest_init[] = "/sys/class/hidraw/hidraw";
+    char dest_final[] = "/device/modalias";
+    char dest[100];
+    strcat(dest, dest_init);
+    strcat(dest, "1");
+    strcat(dest, dest_final);
     ptr_file = fopen(dest, "r");
-    fgets(text, sizeof(text), ptr_file);
 
-    if(strstr(text, "6604") != NULL) {
-        snprintf(buf, sizeof(buf), "echo HID we want %s", text);
+    if (ptr_file != NULL) {
+        fgets(text, sizeof(text), ptr_file);
+
+        if(strstr(text, "6604") != NULL) {
+            snprintf(buf, sizeof(buf), "echo HID we want %s", text);
+        }
+        else {
+            snprintf(buf, sizeof(buf), "echo Not the HID we want %s", text);
+        }
+
+        system(buf);
+        fclose(ptr_file);
     }
-    else {
-        snprintf(buf, sizeof(buf), "echo Not the HID we want");
-    }
-    system(buf);
-    fclose(ptr_file);
     return 0;
 }
