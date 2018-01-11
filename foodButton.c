@@ -1,0 +1,86 @@
+#include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/time.h>
+#include <time.h>
+
+int main(int argc, char **argv) {
+  system("echo foodbutton.c starting");
+
+  int i;
+    char dest_init[] = "/sys/class/hidraw/hidraw";
+    char dest_final[] = "/device/modalias";
+
+    for(i=0; i<3; i = i + 1) {
+        FILE *ptr_file;
+        char dest[100];
+        char buf[200];
+        char str[1];
+        char text[100];
+        
+        sprintf(str, "%d", i);
+        strcat(dest, dest_init);
+        strcat(dest, str);
+        strcat(dest, dest_final);
+
+        ptr_file = fopen(dest, "r");
+
+        if (ptr_file != NULL) {
+            fgets(text, sizeof(text), ptr_file);
+
+            if(strstr(text, "6604") != NULL) {
+                snprintf(buf, sizeof(buf), "echo HID we want %s", text);
+                system(buf);
+                fclose(ptr_file);
+                break;
+            }
+            else {
+                snprintf(buf, sizeof(buf), "echo Not the HID we want %s", text);
+            }
+
+            system(buf);
+            fclose(ptr_file);
+            }
+        dest[0] = '\0';
+        buf[0] = '\0';
+    }
+    char file_path[100];
+    char print_path[100];
+    char destination[] = "/dev/hidraw";
+    strcat(file_path, destination);
+    char hid_no[1];
+    sprintf(hid_no, "%d", i);
+    strcat(file_path, hid_no);
+
+
+  FILE *hidrawptr;
+  int c;
+  //struct timeval last;
+  time_t last, current;
+  time(&last);
+  hidrawptr = fopen(file_path, "r");
+  if (!hidrawptr) {
+    printf("unable to open the file");
+  }
+
+  
+  while (1) {
+    c = fgetc(hidrawptr);    
+    time(&current);
+
+    if(c) {
+      if (difftime(current, last) >= 10.00) {
+        time(&last);
+        system("echo button pressed >> /home/pi/Desktop/freefood/log.txt");
+        
+        system("sudo python /home/pi/Desktop/freefood/foodButton.py &");
+      }
+      else {
+      	system("echo email already sent less than 10 seconds ago >> /home/pi/Desktop/freefood/log.txt");
+      }
+    }
+  }
+  return 0;
+}
