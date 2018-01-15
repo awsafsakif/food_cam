@@ -35,5 +35,40 @@ int main(int argc, char* argv[]) {
     char dest_init[100] = "/dev/input/event";
     strncat(dest_init, ctostr, 2);
     printf(dest_init);
+    
+    int fd;
+    
+    fd = open(dest_init, O_RDONLY);
+    struct input_event ev;
+    
+
+    char buffer[100];
+    int evCode;
+    while (1)
+    {
+        read(fd, &ev, sizeof(struct input_event));
+
+        if(ev.type == 1)
+            //printf("key %i state %i\n", ev.code, ev.value);
+            if(ev.value == 0) {
+                //printf(" : [key %i]\n ", ev.code);
+		// Save the input to a string
+		evCode = ev.code;
+		sprintf(buffer + strlen(buffer), "%i", evCode);
+                
+		//Check input string for the 4 key combination from the button
+		if (strstr(buffer, "125972231") != NULL) {
+               	    printf("Button Pressed \n");
+                    buffer[0] = '\0';
+                    printf("String reset to size %i", strlen(buffer));
+        	}
+		else if(strlen(buffer) >=9) {
+			buffer[0] = '\0';
+			printf("Inputs reset");
+		}
+	}
+	
+    }
+
     return 0;
 }
