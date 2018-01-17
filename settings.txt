@@ -1,5 +1,0 @@
-email=sakifaws@dgp.toronto.edu
-picturesPath=/var/www/html/pictures/
-intervalPicture=15
-intervalRemove=7200
-emailContent=There is Free food in the DGP lounge! To see what is left right now go to http://freefood.cs.toronto.edu/.
