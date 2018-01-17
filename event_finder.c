@@ -6,13 +6,14 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 int main(int argc, char* argv[]) {
     FILE* file = fopen("/proc/bus/input/devices", "r");
     char line[256];
     
     while (fgets(line, sizeof(line), file)) {
-        printf("%s", line);
+        //printf("%s", line);
         if(strstr(line, "6604") != NULL) {
             for(int i=0; i < 5; i++) {fgets(line, sizeof(line), file);}
             break;
@@ -58,13 +59,15 @@ int main(int argc, char* argv[]) {
                 
 		//Check input string for the 4 key combination from the button
 		if (strstr(buffer, "125972231") != NULL) {
+		    system("echo button pressed >> /home/pi/Desktop/freefood/log.txt");
+                    system("sudo python /home/pi/Desktop/freefood/foodButton.py &");
                	    printf("Button Pressed \n");
                     buffer[0] = '\0';
-                    printf("String reset to size %i", strlen(buffer));
+                    //printf("String reset to size %i", strlen(buffer));
         	}
 		else if(strlen(buffer) >=9) {
 			buffer[0] = '\0';
-			printf("Inputs reset");
+			printf("Input not being received from button. Check /var/log/syslog");
 		}
 	}
 	
