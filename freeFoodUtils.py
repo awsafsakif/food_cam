@@ -11,7 +11,7 @@ from email.mime.multipart import MIMEMultipart
 
 global email, intervalPicture, intervalRemove, emailContent, picturesPath
 
-file = open("/home/pi/Desktop/freefood/settings.txt").readlines()
+file = open("./settings.txt").readlines()
 #print file
 email = ""
 intervalPicture = ""
@@ -35,8 +35,7 @@ def takepicture():
 	global picturesPath
         pic =picturesPath + str(time.time())
 	#os.system("echo '%s taking a picture' >> ./log.txt" %time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime()))
-	os.system("sudo fswebcam -r 640x480 -q --no-banner --no-timestamp %s.jpeg" %(pic))
-	os.system("fswebcam -r 640x480 -q --set brightnesss=75 --no-banner --no-timestamp %s.jpeg" %(pic))
+	os.system("sudo fswebcam -F 50 -r 640x480 -q --set brightness=25%% --no-banner --no-timestamp %s.jpeg" %(pic))
 	return pic
 	
 def removeOldPictures():

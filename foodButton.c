@@ -59,8 +59,8 @@ int main(int argc, char* argv[]) {
                 
 		//Check input string for the 4 key combination from the button
 		if (strstr(buffer, "125972231") != NULL) {
-		    system("echo button pressed >> /home/pi/Desktop/freefood/log.txt");
-                    system("sudo python /home/pi/Desktop/freefood/foodButton.py &");
+		    system("echo button pressed >> ./log.txt");
+                    system("sudo python ./foodButton.py &");
                	    printf("Button Pressed \n");
                     buffer[0] = '\0';
                     //printf("String reset to size %i", strlen(buffer));
