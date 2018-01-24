@@ -32,6 +32,8 @@ int main(int argc, char **argv) {
 
         if(strstr(text, "6604") != NULL) {
             snprintf(buf, sizeof(buf), "echo HID we want %s", text);
+            system(buf); 
+            fclose(ptr_file);
             break;
         }
         else {
@@ -42,6 +44,7 @@ int main(int argc, char **argv) {
         fclose(ptr_file);
         }
     dest[0] = '\0';
+    buf[0] = '\0';
     }
     char file_path[100];
     char print_path[100];

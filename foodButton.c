@@ -1,86 +1,77 @@
+#include <linux/input.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <unistd.h>
-#include <sys/time.h>
-#include <time.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
 
-int main(int argc, char **argv) {
-  system("echo foodbutton.c starting");
-
-  int i;
-    char dest_init[] = "/sys/class/hidraw/hidraw";
-    char dest_final[] = "/device/modalias";
-
-    for(i=0; i<3; i = i + 1) {
-        FILE *ptr_file;
-        char dest[100];
-        char buf[200];
-        char str[1];
-        char text[100];
-        
-        sprintf(str, "%d", i);
-        strcat(dest, dest_init);
-        strcat(dest, str);
-        strcat(dest, dest_final);
-
-        ptr_file = fopen(dest, "r");
-
-        if (ptr_file != NULL) {
-            fgets(text, sizeof(text), ptr_file);
-
-            if(strstr(text, "6604") != NULL) {
-                snprintf(buf, sizeof(buf), "echo HID we want %s", text);
-                system(buf);
-                fclose(ptr_file);
-                break;
-            }
-            else {
-                snprintf(buf, sizeof(buf), "echo Not the HID we want %s", text);
-            }
-
-            system(buf);
-            fclose(ptr_file);
-            }
-        dest[0] = '\0';
-        buf[0] = '\0';
+int main(int argc, char* argv[]) {
+    FILE* file = fopen("/proc/bus/input/devices", "r");
+    char line[256];
+    
+    while (fgets(line, sizeof(line), file)) {
+        //printf("%s", line);
+        if(strstr(line, "6604") != NULL) {
+            for(int i=0; i < 5; i++) {fgets(line, sizeof(line), file);}
+            break;
+        }
     }
-    char file_path[100];
-    char print_path[100];
-    char destination[] = "/dev/hidraw";
-    strcat(file_path, destination);
-    char hid_no[1];
-    sprintf(hid_no, "%d", i);
-    strcat(file_path, hid_no);
+    
+    char ctostr[2];
+    ctostr[1] = '\0';
+    int i = 0;
+    int len = strlen(line);
+    while(i < len) {
+        if(isdigit(line[i])) {
+             ctostr[0] = line[i];
+             break;
+        }
+        ++i;
+    }   
+    fclose(file);
+    
+    char dest_init[100] = "/dev/input/event";
+    strncat(dest_init, ctostr, 2);
+    printf(dest_init);
+    
+    int fd;
+    
+    fd = open(dest_init, O_RDONLY);
+    struct input_event ev;
+    
 
+    char buffer[100];
+    int evCode;
+    while (1)
+    {
+        read(fd, &ev, sizeof(struct input_event));
 
-  FILE *hidrawptr;
-  int c;
-  //struct timeval last;
-  time_t last, current;
-  time(&last);
-  hidrawptr = fopen(file_path, "r");
-  if (!hidrawptr) {
-    printf("unable to open the file");
-  }
-
-  
-  while (1) {
-    c = fgetc(hidrawptr);    
-    time(&current);
-
-    if(c) {
-      if (difftime(current, last) >= 10.00) {
-        time(&last);
-        system("echo button pressed >> /home/pi/Desktop/freefood/log.txt");
-        
-        system("sudo python /home/pi/Desktop/freefood/foodButton.py &");
-      }
-      else {
-      	system("echo email already sent less than 10 seconds ago >> /home/pi/Desktop/freefood/log.txt");
-      }
+        if(ev.type == 1)
+            //printf("key %i state %i\n", ev.code, ev.value);
+            if(ev.value == 0) {
+                //printf(" : [key %i]\n ", ev.code);
+		// Save the input to a string
+		evCode = ev.code;
+		sprintf(buffer + strlen(buffer), "%i", evCode);
+                
+		//Check input string for the 4 key combination from the button
+		if (strstr(buffer, "125972231") != NULL) {
+		    system("echo button pressed >> /home/pi/Desktop/freefood/log.txt");
+                    system("sudo python /home/pi/Desktop/freefood/foodButton.py &");
+               	    printf("Button Pressed \n");
+                    buffer[0] = '\0';
+                    //printf("String reset to size %i", strlen(buffer));
+        	}
+		else if(strlen(buffer) >=9) {
+			buffer[0] = '\0';
+			printf("Input not being received from button. Check /var/log/syslog");
+		}
+	}
+	
     }
-  }
-  return 0;
+
+    return 0;
 }
